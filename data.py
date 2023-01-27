@@ -44,3 +44,28 @@ def build_histogram() -> None:
     pyplt.show()
 
 
+
+
+def build_histogram() -> None:
+    top1000 = extract_top_titles(types=["MOVIE", "SHOW"])
+
+    df = top1000[top1000["genres"] != "[]"]
+
+    df = pandas.DataFrame(df)
+    df["genres"] = df["genres"].apply(ast.literal_eval)
+
+    genres_counts = (
+        df.explode(column="genres").groupby(["genres"]).size().reset_index(name="Count")
+    )
+
+    genres = list(genres_counts["genres"])
+    counts = list(genres_counts["Count"])
+
+    pyplt.bar(genres, counts)
+    pyplt.xticks(rotation=90)
+    pyplt.xlabel("Genre")
+    pyplt.ylabel("Count of movies/shows")
+
+    pyplt.title("Count by genre")
+
+    pyplt.show()
