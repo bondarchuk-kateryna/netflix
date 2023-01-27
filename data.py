@@ -144,3 +144,10 @@ def get_top_actors() -> None:
         f" TOP 10 actors \n"
         f"{top10_actors[['#', 'Actor name', 'Count of movies']].to_string(index=False)}"
     )
+
+if __name__ == "__main__":
+    build_histogram()
+    build_plot_best_movies_year()
+    generate_movie_series_histograms()
+    build_age_categories()
+    get_top_actors()
