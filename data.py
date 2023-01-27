@@ -120,3 +120,27 @@ def generate_movie_series_histograms():
         f"Series rating of movies on IMDB is: {round(series.loc[:, 'imdb_score'].mean(), 2)}"
     )
     pyplt.show()
+
+
+def get_top_actors() -> None:
+    top_1000_movies = extract_top_titles(types=["MOVIE"])
+    actors = pandas.read_csv("credits.tsv")
+    actors = actors.loc[actors["role"] == "ACTOR"]
+
+    joined_df = top_1000_movies.join(actors, lsuffix="_movies", rsuffix="_actors")
+
+    top10_actors = joined_df.groupby("name").count()
+    top10_actors = top10_actors.sort_values(by=["id_movies"], ascending=False).iloc[:10]
+
+    top10_actors = top10_actors.reset_index()
+
+    column_names = {"name": "Actor name", "id_movies": "Count of movies"}
+
+    top10_actors["#"] = top10_actors.index + 1
+
+    top10_actors = top10_actors.rename(columns=column_names)
+
+    print(
+        f" TOP 10 actors \n"
+        f"{top10_actors[['#', 'Actor name', 'Count of movies']].to_string(index=False)}"
+    )
