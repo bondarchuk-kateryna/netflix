@@ -45,27 +45,45 @@ def build_histogram() -> None:
 
 
 
+def extract_top_titles(types: list, n: int = 1000) -> pandas.DataFrame:
 
-def build_histogram() -> None:
-    top1000 = extract_top_titles(types=["MOVIE", "SHOW"])
+    movies_df = pandas.read_csv("titles.tsv")
+    movies = movies_df.loc[movies_df["type"].isin(types)]
 
-    df = top1000[top1000["genres"] != "[]"]
+    top_n_titles = movies.sort_values(by=["imdb_score"], ascending=False).iloc[:n]
+    return top_n_titles
 
-    df = pandas.DataFrame(df)
-    df["genres"] = df["genres"].apply(ast.literal_eval)
 
-    genres_counts = (
-        df.explode(column="genres").groupby(["genres"]).size().reset_index(name="Count")
+
+def build_plot_best_movies_year() -> None:
+    df = pandas.read_csv("titles.tsv")
+    df = df[(df["type"] == "MOVIE") & (df["release_year"] >= 2000)]
+    df["Movie Count"] = df.groupby("release_year")["id"].transform("count")
+    df["IMDB 8+ Count"] = (
+        df[df["imdb_score"] > 8.0].groupby("release_year")["id"].transform("count")
     )
 
-    genres = list(genres_counts["genres"])
-    counts = list(genres_counts["Count"])
+    result = (
+        df.groupby(["release_year"])[["Movie Count", "IMDB 8+ Count"]]
+        .count()
+        .reset_index()
+    )
+    result["Percentage"] = round(
+        100 * result["IMDB 8+ Count"] / result["Movie Count"], 2
+    )
 
-    pyplt.bar(genres, counts)
-    pyplt.xticks(rotation=90)
-    pyplt.xlabel("Genre")
-    pyplt.ylabel("Count of movies/shows")
+    years = list(result["release_year"])
+    percentage = list(result["Percentage"])
 
-    pyplt.title("Count by genre")
+    best_year = result.loc[result["Percentage"].idxmax()]
+    last_year = max(years)
 
+    print(f'The best IMDB year is {int(best_year["release_year"])}')
+
+    pyplt.plot(years, percentage)
+    pyplt.ylabel("IMDB percentage greater than 8, %")
+    pyplt.xlabel("Year")
+    pyplt.title("Percentage of films with IMDB gte 8")
+    pyplt.xticks(range(2000, last_year, 2))
     pyplt.show()
+
