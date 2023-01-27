@@ -87,3 +87,36 @@ def build_plot_best_movies_year() -> None:
     pyplt.xticks(range(2000, last_year, 2))
     pyplt.show()
 
+def generate_movie_series_histograms():
+    df = pandas.read_csv("titles.tsv")
+    movies = df[df["type"] == "MOVIE"]
+    series = df[df["type"] == "SHOW"]
+    movies_imdb = list(movies["imdb_score"])
+    series_imdb = list(series["imdb_score"])
+
+    colors_list = ["blue", "gold"]
+    names = ["Movies IMDB distribution", "Series IMDB distribution"]
+
+    bins = numpy.arange(0, 10, 0.2)
+
+    pyplt.hist(
+        [movies_imdb, series_imdb],
+        color=colors_list,
+        label=names,
+        density=True,
+        bins=bins,
+        stacked=False,
+    )
+
+    pyplt.legend()
+    pyplt.title("IMDB probability distributions")
+    pyplt.xlabel("IMDB score")
+    pyplt.ylabel("Probability")
+
+    print(
+        f"Average rating of movies on IMDB is: {round(movies.loc[:, 'imdb_score'].mean(), 2)}"
+    )
+    print(
+        f"Series rating of movies on IMDB is: {round(series.loc[:, 'imdb_score'].mean(), 2)}"
+    )
+    pyplt.show()
